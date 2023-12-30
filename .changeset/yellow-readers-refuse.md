@@ -2,4 +2,4 @@
 "@erickivel/simple-http": patch
 ---
 
-initial commit
+Make package public
