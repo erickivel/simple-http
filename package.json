@@ -6,11 +6,13 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
+    "start": "npm run build && node dist/playground.js",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "tsup src/index.ts --format cjs,esm --dts",
+    "build": "tsup src/**.ts --format cjs,esm --dts",
     "lint": "tsc",
-    "ci": "npm run lint && npm run test && npm run build"
+    "ci": "npm run lint && npm run test && npm run build",
+    "release": "npm run lint && npm run test && npm run build && changeset publish"
   },
   "keywords": [],
   "author": "",

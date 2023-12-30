@@ -1,3 +1,3 @@
-export const hello = () => {
+export const createServer = () => {
   console.log("hello");
 }
