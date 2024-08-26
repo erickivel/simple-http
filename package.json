@@ -6,10 +6,12 @@
   "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
   "scripts": {
-    "start": "npm run build && node dist/playground.js",
+    "start:dev": "nodemon --exec 'npm run build && node dist/playground.js' --ignore dist/ --watch ./src/response.ts",
+    "start:http": "nodemon --exec 'npm run build && node dist/nodeHttp.js' --ignore dist/ --watch ./src/response.ts",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "tsup src/**.ts --format cjs,esm --dts",
+    "types": "./src/simple-http.d.ts",
+    "build": "tsup src/**/**.ts --format cjs,esm --dts",
     "lint": "tsc",
     "ci": "npm run lint && npm run test && npm run build",
     "release": "npm run lint && npm run test && npm run build && changeset publish"
@@ -19,6 +21,7 @@
   "license": "MIT",
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
+    "nodemon": "^3.1.0",
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
     "vitest": "^1.1.0"
