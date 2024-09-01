@@ -1,18 +1,37 @@
-import { IHTTPRequest } from "simple-http"
+import simpleHttp from "simple-http"
+
 import { NEW_LINE } from "./constants";
 
-export class HTTPRequest implements IHTTPRequest {
+export class HTTPRequest implements simpleHttp.HTTPRequest {
   public method = "";
+
   public resource = "";
+
   public version = "";
-  public protocol = "";
-  public headers: {[key:string]: string} = {};
-  public body = "";
+  
+  public protocol = "HTTP";
+
+  public headers = {}
+
+  public readonly body: string = '';
 
   constructor(requestString: string) {
+    const { method, resource, version, protocol, headers, body } = this.parseRequestString(requestString)
+
+    this.method = method
+    this.resource = resource
+    this.version = version
+    this.protocol = protocol || this.protocol
+    this.headers = headers || this.version
+    this.body = body
+
+    console.log(this)
+  }
+
+  private parseRequestString(requestString: string): simpleHttp.IRequestParsedData {
     const lines = requestString.split(NEW_LINE)
 
-    if(!lines[0]) {
+    if(lines.length <= 0 ) {
       throw new Error("Request parse error")
     }
 
@@ -22,32 +41,36 @@ export class HTTPRequest implements IHTTPRequest {
       throw new Error("Request parse error")
     }
   
-    console.log("startLine:\n", startLine)
+    const method = startLine[0]
 
-    this.method = startLine[0]
-
-    this.resource = startLine[1]
+    const resource = startLine[1]
 
     const [protocol, version] = startLine[2].split("/")
 
-    this.protocol =  protocol || this.protocol
-    this.version =  version || this.protocol
-
     let line = lines.shift()
-    // Empty line between Headers and Body
+
+    const headers: simpleHttp.Headers = {}
+
     while(line) {
       const [key, value] = line.split(": ")
       if (!key || !value ) {
         throw new Error("Request parse error")
       }
 
-      this.headers[key] = value
+      headers[key] = value
 
       line = lines.shift()
     }
 
-    this.body = lines.join(NEW_LINE)
+    const body = lines.join(NEW_LINE)
 
-    console.log(this)
+    return {
+      method,
+      resource,
+      version: version || "",
+      protocol: protocol || "",
+      headers,
+      body,
+    }
   }
 }

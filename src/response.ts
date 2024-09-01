@@ -3,28 +3,27 @@ import net from "net";
 import simpleHttp from "simple-http";
 import { NEW_LINE, STATUS_CODES } from "./constants";
 
-type TransferEncoding = 'normal' | 'chunked'
 
 export class HTTPResponse implements simpleHttp.HTTPResponse {
   private protocol = "HTTP";
 
   private protocolVersion = "1.1";
 
-  public statusCode: number = 200;
+  public statusCode = 200;
 
-  public statusMessage: string = STATUS_CODES[200];
-
-  public headers: {[key:string]: string} = {}
+  public statusMessage = STATUS_CODES[200];
 
   public socket: net.Socket;
 
-  private isChunkedHeaderSent = false;
+  private headers: simpleHttp.Headers = {}
 
-  private transferEncoding: TransferEncoding = 'normal'; 
+  private wasChunkedHeaderSent = false;
+
+  private transferEncoding: simpleHttp.TransferEncoding = 'normal'; 
 
   constructor(socket: net.Socket) {
     this.socket = socket;
-    this.socket.setKeepAlive(true)
+    this.socket.setKeepAlive(false)
     this.socket.setTimeout(5000)
   }
 
@@ -38,7 +37,7 @@ export class HTTPResponse implements simpleHttp.HTTPResponse {
 
     console.log("Chunked HeaderParsed Response:\n", parsedResponse)
 
-    this.isChunkedHeaderSent = true
+    this.wasChunkedHeaderSent = true
     this.socket.write(parsedResponse)
   }
 
@@ -65,7 +64,7 @@ export class HTTPResponse implements simpleHttp.HTTPResponse {
   }
 
   public write(chunk: string) {
-    if (!this.isChunkedHeaderSent) {
+    if (!this.wasChunkedHeaderSent) {
       this.transferEncoding = 'chunked'
       this.sendChunkedTransferHeader()
     }
@@ -74,7 +73,7 @@ export class HTTPResponse implements simpleHttp.HTTPResponse {
   }
 
   private sendMessage(messageBody: string) {
-    this.headers["Date"] = new Date("2020").toUTCString()
+    this.headers["Date"] = new Date().toUTCString()
     this.headers["Content-Length"] = Buffer.byteLength(messageBody).toString()
 
     const parsedResponse =
@@ -95,7 +94,7 @@ export class HTTPResponse implements simpleHttp.HTTPResponse {
         if (chunk) {
           this.sendMessage(chunk)
         } else {
-          // TODO Drain/Flush and close socket
+          // TODO Drain/Flush and Close socket
         }
         break;
 
